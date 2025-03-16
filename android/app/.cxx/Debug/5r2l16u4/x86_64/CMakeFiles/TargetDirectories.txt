@@ -1,0 +1,2 @@
+D:/didpool/android/app/.cxx/Debug/5r2l16u4/x86_64/CMakeFiles/edit_cache.dir
+D:/didpool/android/app/.cxx/Debug/5r2l16u4/x86_64/CMakeFiles/rebuild_cache.dir
