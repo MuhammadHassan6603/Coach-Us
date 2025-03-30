@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:didpool/components/app_text.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MealSuggestionTracker extends StatefulWidget {
   const MealSuggestionTracker({super.key});
@@ -31,45 +32,89 @@ class _MealSuggestionTrackerState extends State<MealSuggestionTracker> {
   }
   
   Future<void> _loadData() async {
-    setState(() {
-      isLoading = true;
-    });
+  setState(() {
+    isLoading = true;
+  });
+  
+  try {
+    // Load meal suggestions
+    final suggestions = await _mealService.getMealSuggestions();
     
-    try {
-      // Load meal suggestions
-      final suggestions = await _mealService.getMealSuggestions();
-      
-      // Load recently tracked meals
-      final trackedMeals = await _mealService.getRecentlyTrackedMeals();
-      
-      // Load daily calorie goal
-      final calorieGoal = await _mealService.getDailyCalorieGoal();
-      
-      // Calculate consumed calories from today's tracked meals
-      int todayCalories = 0;
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      
-      for (var meal in trackedMeals) {
-        final mealDate = meal['date']?.split('T')[0];
-        if (mealDate == today) {
-          todayCalories += meal['calories'] as int;
-        }
+    // Load recently tracked meals
+    final trackedMeals = await _mealService.getRecentlyTrackedMeals();
+    
+    // Load daily calorie goal
+    final calorieGoal = await _mealService.getDailyCalorieGoal();
+    
+    // Calculate consumed calories from today's tracked meals
+    int todayCalories = 0;
+    final today = DateTime.now();
+    final todayString = today.toIso8601String().split('T')[0];
+    
+    // Check if today is Monday to reset weekly calories
+    if (today.weekday == DateTime.monday) {
+      // Check if we need to reset (you can use SharedPreferences to store the last reset date)
+      final lastResetDate = await _getLastResetDate();
+      if (lastResetDate != todayString) {
+        // Reset calories if we haven't reset today
+        await _resetWeeklyCalories();
+        await _saveLastResetDate(todayString);
       }
-      
-      setState(() {
-        mealSuggestions = suggestions;
-        recentlyTrackedMeals = trackedMeals;
-        dailyCalorieGoal = calorieGoal;
-        consumedCalories = todayCalories;
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading data: $e');
-      setState(() {
-        isLoading = false;
-      });
     }
+    
+    // Now get the calories for today (after potential reset)
+    for (var meal in trackedMeals) {
+      final mealDate = meal['date']?.split('T')[0];
+      if (mealDate == todayString) {
+        todayCalories += meal['calories'] as int;
+      }
+    }
+    
+    setState(() {
+      mealSuggestions = suggestions;
+      recentlyTrackedMeals = trackedMeals;
+      dailyCalorieGoal = calorieGoal;
+      consumedCalories = todayCalories;
+      isLoading = false;
+    });
+  } catch (e) {
+    print('Error loading data: $e');
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
+// Add these new methods to handle weekly reset
+
+// Method to get the last reset date from SharedPreferences
+Future<String?> _getLastResetDate() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('lastCalorieResetDate');
+}
+
+// Method to save the last reset date to SharedPreferences
+Future<void> _saveLastResetDate(String date) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('lastCalorieResetDate', date);
+}
+
+// Method to reset weekly calories
+Future<void> _resetWeeklyCalories() async {
+  try {
+    // Implement this method in your MealService
+    await _mealService.resetWeeklyCalories();
+    
+    // Show reset notification (optional)
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Weekly calorie count has been reset')),
+      );
+    }
+  } catch (e) {
+    print('Error resetting weekly calories: $e');
+  }
+}
   
   void _viewMealDetails(Map<String, dynamic> meal) {
     Navigator.push(
@@ -144,23 +189,23 @@ class _MealSuggestionTrackerState extends State<MealSuggestionTracker> {
                             fontWeight: FontWeight.w600,
                             color: const Color(0xffE9E3E4),
                           ),
-                          const Spacer(),
-                          Container(
-                            height: 30.h,
-                            width: 80.w,
-                            decoration: BoxDecoration(
-                              color: const Color(0xff4023D7),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Center(
-                              child: AppText(
-                                'See All',
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xffE9E3E4),
-                              ),
-                            ),
-                          ),
+                          // const Spacer(),
+                          // Container(
+                          //   height: 30.h,
+                          //   width: 80.w,
+                          //   decoration: BoxDecoration(
+                          //     color: const Color(0xff4023D7),
+                          //     borderRadius: BorderRadius.circular(15),
+                          //   ),
+                          //   child: Center(
+                          //     child: AppText(
+                          //       'See All',
+                          //       fontSize: 12.sp,
+                          //       fontWeight: FontWeight.w500,
+                          //       color: const Color(0xffE9E3E4),
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       ),
                       SizedBox(height: 20.h),

@@ -7,6 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class EditProfileScreen extends StatefulWidget {
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
@@ -26,22 +28,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _loadUserData() async {
     User? user = FirebaseAuth.instance.currentUser;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? imagePath = prefs.getString('profilePic');
+
     if (user != null) {
-      DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
       setState(() {
         _nameController.text = userDoc['fullName'] ?? '';
         _emailController.text = userDoc['email'] ?? '';
+        _image = imagePath != null ? File(imagePath) : null;
       });
     }
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
       });
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profilePic', pickedFile.path);
     }
   }
 
@@ -49,20 +62,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isLoading = true);
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
         'fullName': _nameController.text,
         'email': _emailController.text,
       });
     }
     setState(() => _isLoading = false);
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Profile updated successfully!',style: TextStyle(color: Colors.white), ),
-          backgroundColor: Colors.green,
+      SnackBar(
+        content: Text(
+          'Profile updated successfully!',
+          style: TextStyle(color: Colors.white),
         ),
-      );
-    Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => BottomBarScreen()));
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => BottomBarScreen()));
   }
 
   @override
@@ -84,32 +103,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 radius: 50.r,
                 backgroundColor: Colors.grey,
                 backgroundImage: _image != null ? FileImage(_image!) : null,
-                child: _image == null ? Icon(Icons.camera_alt, size: 30.sp, color: Colors.white) : null,
+                child: _image == null
+                    ? Icon(Icons.camera_alt, size: 30.sp, color: Colors.white)
+                    : null,
               ),
             ),
             SizedBox(height: 20.h),
             TextField(
               controller: _nameController,
               style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Full Name', labelStyle: TextStyle(color: Colors.white70)),
+              decoration: InputDecoration(
+                  labelText: 'Full Name',
+                  labelStyle: TextStyle(color: Colors.white70)),
             ),
             SizedBox(height: 10.h),
             TextField(
               controller: _emailController,
               style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Email', labelStyle: TextStyle(color: Colors.white70)),
+              decoration: InputDecoration(
+                  labelText: 'Email',
+                  labelStyle: TextStyle(color: Colors.white70)),
             ),
             SizedBox(height: 20.h),
             _isLoading
                 ? CircularProgressIndicator()
                 : Custombutton(title: 'Update Profile', ontap: _updateProfile)
-            // _isLoading
-            //     ? CircularProgressIndicator()
-            //     : ElevatedButton(
-            //         onPressed: _updateProfile,
-            //         style: ElevatedButton.styleFrom(backgroundColor: Color(0xff4023D7)),
-            //         child: Text('Update Profile', style: TextStyle(color: Colors.white)),
-            //       ),
           ],
         ),
       ),

@@ -42,7 +42,7 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
   @override
   void initState() {
     super.initState();
-    _resetStats();
+    // _resetStats();
     WorkoutService().createInitialUserStats();
     Provider.of<UserProvider>(context, listen: false).fetchUserData();
   }

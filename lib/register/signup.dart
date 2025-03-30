@@ -150,46 +150,46 @@ class _SignupScreenState extends State<SignupScreen> {
                           ontap: _registerUser,
                         ),
                   SizedBox(height: 20.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                            color: Colors.grey, indent: 20, endIndent: 10),
-                      ),
-                      Text(
-                        "or",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                            color: Colors.grey, indent: 10, endIndent: 20),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.only(left: 10),
-                        height: 50.h,
-                        width: 50.w,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: Image.asset(
-                          "assets/google.png",
-                          scale: 3.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 30.h),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: Divider(
+                  //           color: Colors.grey, indent: 20, endIndent: 10),
+                  //     ),
+                  //     Text(
+                  //       "or",
+                  //       style: TextStyle(
+                  //         color: Colors.grey,
+                  //         fontSize: 15.sp,
+                  //         fontWeight: FontWeight.w500,
+                  //       ),
+                  //     ),
+                  //     Expanded(
+                  //       child: Divider(
+                  //           color: Colors.grey, indent: 10, endIndent: 20),
+                  //     ),
+                  //   ],
+                  // ),
+                  // SizedBox(height: 20.h),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Container(
+                  //       margin: EdgeInsets.only(left: 10),
+                  //       height: 50.h,
+                  //       width: 50.w,
+                  //       decoration: BoxDecoration(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //         border: Border.all(color: Colors.grey),
+                  //       ),
+                  //       child: Image.asset(
+                  //         "assets/google.png",
+                  //         scale: 3.5,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // SizedBox(height: 30.h),
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);

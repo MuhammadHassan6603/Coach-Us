@@ -9,7 +9,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
   final WorkoutModel workout;
 
   const WorkoutDetailsScreen({
-    super.key, 
+    super.key,
     required this.workout,
   });
 
@@ -40,8 +40,6 @@ class WorkoutDetailsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 20.h),
-                
-                // Workout name and category
                 AppText(
                   workout.name,
                   fontSize: 24.sp,
@@ -49,8 +47,6 @@ class WorkoutDetailsScreen extends StatelessWidget {
                   color: const Color(0xffE9E3E4),
                 ),
                 SizedBox(height: 5.h),
-                
-                // Category and difficulty tags
                 Row(
                   children: [
                     _buildTag(workout.category, const Color(0xff4023D7)),
@@ -58,10 +54,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
                     _buildTag(workout.difficulty, const Color(0xff6B4EFF)),
                   ],
                 ),
-                
                 SizedBox(height: 20.h),
-                
-                // Workout stats
                 Container(
                   padding: EdgeInsets.all(15.r),
                   decoration: BoxDecoration(
@@ -79,10 +72,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                
                 SizedBox(height: 25.h),
-                
-                // Description
                 AppText(
                   'Description',
                   fontSize: 18.sp,
@@ -96,10 +86,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
                   fontWeight: FontWeight.normal,
                   color: Color(0xffE0E0E0),
                 ),
-                
                 SizedBox(height: 25.h),
-                
-                // Workout steps preview
                 AppText(
                   'Workout Plan',
                   fontSize: 18.sp,
@@ -107,7 +94,6 @@ class WorkoutDetailsScreen extends StatelessWidget {
                   color: const Color(0xffE9E3E4),
                 ),
                 SizedBox(height: 15.h),
-                
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -117,7 +103,6 @@ class WorkoutDetailsScreen extends StatelessWidget {
                     return _buildWorkoutStep(step, index);
                   },
                 ),
-                
                 SizedBox(height: 30.h),
               ],
             ),
@@ -135,7 +120,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () {
             Navigator.push(
-              context, 
+              context,
               MaterialPageRoute(
                 builder: (context) => WorkoutInProgressScreen(workout: workout),
               ),
@@ -160,7 +145,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildTag(String text, Color color) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -176,7 +161,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildStat(String label, String value) {
     return Column(
       children: [
@@ -196,7 +181,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildDivider() {
     return Container(
       height: 40.h,
@@ -204,12 +189,12 @@ class WorkoutDetailsScreen extends StatelessWidget {
       color: const Color(0xff3D3546),
     );
   }
-  
+
   Widget _buildWorkoutStep(WorkoutStep step, int index) {
     final minutes = (step.durationSeconds / 60).floor();
     final seconds = step.durationSeconds % 60;
     final durationText = '${minutes}m ${seconds}s';
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(15.r),
@@ -252,7 +237,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
                   step.description,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.normal,
-                  color:Color(0xffE0E0E0),
+                  color: Color(0xffE0E0E0),
                 ),
                 SizedBox(height: 5.h),
                 AppText(

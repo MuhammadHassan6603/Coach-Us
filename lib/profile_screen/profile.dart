@@ -10,7 +10,6 @@ import 'package:didpool/components/app_text.dart';
 import 'package:provider/provider.dart';
 import 'widgets/profile_info_widget.dart';
 import 'widgets/settings_item.dart';
-import 'widgets/stats_summary_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,99 +20,91 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   void _handleDeleteAccount(BuildContext context) {
-  // Create a function to navigate to login that doesn't depend on context
-  void navigateToLogin() {
-    // Use a new, fresh context from a new MaterialPageRoute
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (Route<dynamic> route) => false, // Remove all previous routes
-    );
-  }
-  
-  showDialog(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text("Delete Account", style: TextStyle(color: Colors.red)),
-      content: const Text(
-        "Are you sure you want to delete your account? This action is irreversible, and all your data will be lost!",
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          child: const Text("Cancel",style: TextStyle(color:Colors.white),),
+    void navigateToLogin() {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (Route<dynamic> route) => false,
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title:
+            const Text("Delete Account", style: TextStyle(color: Colors.red)),
+        content: const Text(
+          "Are you sure you want to delete your account? This action is irreversible, and all your data will be lost!",
         ),
-        TextButton(
-          onPressed: () async {
-            // First, close the dialog
-            Navigator.pop(dialogContext);
-            
-            // Show a loading indicator
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (loadingContext) => const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-            
-            String? userId = FirebaseService().getCurrentUser()?.uid;
-            if (userId != null) {
-              try {
-                // Delete Firestore data first
-                await FirebaseService().deleteUserData(userId);
-                
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (loadingContext) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              String? userId = FirebaseService().getCurrentUser()?.uid;
+              if (userId != null) {
                 try {
-                  // Try to delete Auth account
-                  await FirebaseService().deleteUserAccount();
-                } catch (authError) {
-                  print("Auth deletion error: $authError");
-                  // Continue anyway since we've deleted the user data
-                }
-                
-                // Always sign out
-                await FirebaseService().signOut();
-                
-                // Close any loading indicator and navigate
-                Navigator.of(context).pop(); // Remove loading dialog
-                navigateToLogin();
-                
-              } catch (e) {
-                print("Error during account deletion: $e");
-                // Close any loading indicator
-                Navigator.of(context).pop(); // Remove loading dialog
-                
-                // Show error using a new dialog instead of ScaffoldMessenger
-                if (context.mounted) {
-                  showDialog(
-                    context: context,
-                    builder: (errorContext) => AlertDialog(
-                      title: const Text("Error"),
-                      content: const Text("Failed to delete account. Try again later."),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(errorContext);
-                            navigateToLogin(); // Navigate to login anyway
-                          },
-                          child: const Text("OK"),
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  // If context is not mounted, just navigate without showing error
+                  await FirebaseService().deleteUserData(userId);
+
+                  try {
+                    await FirebaseService().deleteUserAccount();
+                  } catch (authError) {
+                    print("Auth deletion error: $authError");
+                  }
+
+                  await FirebaseService().signOut();
+
+                  Navigator.of(context).pop();
                   navigateToLogin();
+                } catch (e) {
+                  print("Error during account deletion: $e");
+
+                  Navigator.of(context).pop();
+
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (errorContext) => AlertDialog(
+                        title: const Text("Error"),
+                        content: const Text(
+                            "Failed to delete account. Try again later."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(errorContext);
+                              navigateToLogin();
+                            },
+                            child: const Text("OK"),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    navigateToLogin();
+                  }
                 }
               }
-            }
-          },
-          child: const Text("Delete", style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
-}
-
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _handleLogout(BuildContext context) {
     showDialog(
@@ -220,15 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   },
                 ),
                 SizedBox(height: 25.h),
-                // AppText(
-                //   'Your Stats',
-                //   fontSize: 16.sp,
-                //   fontWeight: FontWeight.w600,
-                //   color: const Color(0xffE9E3E4),
-                // ),
-                // SizedBox(height: 15.h),
-                // StatsSummaryCard(stats: userStats),
-                // SizedBox(height: 25.h),
                 AppText(
                   'Settings',
                   fontSize: 16.sp,

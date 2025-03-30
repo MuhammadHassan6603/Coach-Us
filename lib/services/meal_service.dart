@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class MealService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -108,6 +109,132 @@ class MealService {
       },
     ];
   }
+
+  // Reset weekly calories tracking
+Future<bool> resetWeeklyCalories() async {
+  if (currentUserId == null) return false;
+
+  try {
+    // 1. Get current date
+    final now = DateTime.now();
+    final today = now.toIso8601String().split('T')[0];
+    
+    // 2. Create/update a weekly tracking document
+    await _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('weeklyStats')
+        .doc(today)
+        .set({
+      'weekStartDate': today,
+      'weekNumber': _getWeekNumber(now),
+      'year': now.year,
+      'totalCalories': 0,
+      'totalProtein': 0,
+      'totalCarbs': 0,
+      'totalFat': 0,
+      'lastResetDate': today,
+    });
+    
+    // 3. Optional: Store previous week's summary for history
+    final previousWeekEnd = now.subtract(const Duration(days: 1));
+    final lastWeek = _getWeekNumber(previousWeekEnd);
+    final lastWeekYear = previousWeekEnd.year;
+    
+    // Get the stats from previous week
+    final weeklyStatsQuery = await _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('weeklyStats')
+        .where('weekNumber', isEqualTo: lastWeek)
+        .where('year', isEqualTo: lastWeekYear)
+        .limit(1)
+        .get();
+    
+    // If we have previous week stats, archive them
+    if (weeklyStatsQuery.docs.isNotEmpty) {
+      final previousWeekStats = weeklyStatsQuery.docs.first.data();
+      await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('weeklyHistory')
+          .doc('${lastWeekYear}_week${lastWeek}')
+          .set(previousWeekStats);
+    }
+    
+    // 4. Flag today's dailyStats as start of new week
+    final todayStatsDoc = await _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('dailyStats')
+        .doc(today)
+        .get();
+    
+    if (todayStatsDoc.exists) {
+      await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('dailyStats')
+          .doc(today)
+          .update({
+        'isWeekStart': true,
+        'weekNumber': _getWeekNumber(now),
+      });
+    } else {
+      // Create today's stats document if it doesn't exist
+      await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('dailyStats')
+          .doc(today)
+          .set({
+        'consumedCalories': 0,
+        'protein': 0,
+        'carbs': 0,
+        'fat': 0,
+        'date': today,
+        'isWeekStart': true,
+        'weekNumber': _getWeekNumber(now),
+      });
+    }
+    
+    // 5. Update user document with reset timestamp
+    await _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .update({
+      'lastWeeklyReset': FieldValue.serverTimestamp(),
+      'currentWeekStartDate': today,
+    });
+    
+    return true;
+  } catch (e) {
+    print('Error in resetWeeklyCalories: $e');
+    return false;
+  }
+}
+
+// Helper method to get ISO week number (1-53)
+int _getWeekNumber(DateTime date) {
+  // Calculate the ISO week number
+  int dayOfYear = int.parse(
+      DateFormat('D').format(date)); // 'D' outputs day of year (1-366)
+  int woy = ((dayOfYear - date.weekday + 10) / 7).floor();
+  
+  // Handle edge cases for week 53/1
+  if (woy < 1) {
+    // Last week of previous year
+    woy = _getWeekNumber(DateTime(date.year - 1, 12, 31));
+  } else if (woy > 52) {
+    // Check if it's actually week 1 of next year
+    final lastDayOfYear = DateTime(date.year, 12, 31);
+    if (_getWeekNumber(lastDayOfYear) == 1) {
+      woy = 1;
+    }
+  }
+  
+  return woy;
+}
 
   // Get recently tracked meals for current user
   Future<List<Map<String, dynamic>>> getRecentlyTrackedMeals() async {

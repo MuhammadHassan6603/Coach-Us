@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:didpool/components/app_text.dart';
@@ -35,7 +37,7 @@ class ProfileInfoWidget extends StatelessWidget {
               radius: 42.r,
               backgroundImage: (userData['profilePic'] != null &&
                       userData['profilePic'].isNotEmpty)
-                  ? NetworkImage(userData['profilePic'])
+                  ? FileImage(File(userData['profilePic']))
                   : null,
               child: (userData['profilePic'] == null ||
                       userData['profilePic'].isEmpty)
