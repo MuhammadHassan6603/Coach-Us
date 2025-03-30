@@ -1,359 +1,148 @@
-import 'package:didpool/home/meal_details.dart';
-import 'package:didpool/components/app_text.dart';
+import 'package:didpool/services/workout_service.dart';
+import 'package:didpool/workout/workout_details/workout_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:didpool/components/app_text.dart';
+import 'package:didpool/models/workout_model/workout_model.dart';
+import 'widgets/level_selector.dart';
+import 'widgets/workout_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final WorkoutService _firebaseService = WorkoutService();
+  String selectedLevel = "Beginner";
+  
+  WorkoutModel? featuredWorkout;
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeAppData();
+    _loadFeaturedWorkout();
+  }
+
+  Future<void> _initializeAppData() async {
+    await _firebaseService.initializeSampleWorkouts();
+    if (_firebaseService.currentUserId != null) {
+      await _firebaseService.createInitialUserStats();
+    }
+  }
+  
+  Future<void> _loadFeaturedWorkout() async {
+    final beginnerWorkouts = await _firebaseService.getWorkoutsByDifficulty("Beginner").first;
+    if (beginnerWorkouts.isNotEmpty) {
+      setState(() {
+        featuredWorkout = beginnerWorkouts.first;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xff1F1926),
       appBar: AppBar(
+        backgroundColor: const Color(0xff1F1926),
         title: Text(
-          'Home',
+          'Workout Center',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
-            color: Color(0xffE9E3E4),
+            color: const Color(0xffE9E3E4),
           ),
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Padding(
-                  //   padding: const EdgeInsets.only(left: 20, right: 20),
-                  //   child: TextFormField(
-                  //     decoration: InputDecoration(
-                  //       hintText: 'Search pancake',
-                  //       suffixIcon: Image.asset(
-                  //         "assets/Filter.png",
-                  //         scale: 3.8,
-                  //       ),
-                  //       filled: true,
-                  //       fillColor: Color(0xff141118),
-                  //       focusedBorder: OutlineInputBorder(
-                  //         borderRadius: BorderRadius.circular(20),
-                  //         borderSide: BorderSide(
-                  //           color: Color(0xff141118),
-                  //         ),
-                  //       ),
-                  //       enabledBorder: OutlineInputBorder(
-                  //         borderRadius: BorderRadius.circular(20),
-                  //         borderSide: BorderSide(
-                  //           color: Color(0xff141118),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  // SizedBox(
-                  //   height: 20.h,
-                  // ),
-                  AppText(
-                    'Category',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xffE9E3E4),
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  SizedBox(
-                    height: 110,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemCount: 6,
-                      itemBuilder: (context, index) {
-                        return Row(
-                          children: [
-                            IntrinsicHeight(
-                              child: Container(
-                                width: 80.w,
-                                decoration: BoxDecoration(
-                                  color: Color(0xff243e3b),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 15.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        height: 50,
-                                        width: 50,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.circular(50),
-                                        ),
-                                        child: Image.asset(
-                                          "assets/breakfast 5.png",
-                                          scale: 3.5,
-                                        ),
-                                      ),
-                                      SizedBox(height: 5,),
-                                      AppText(
-                                        'Salad',
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 15.w,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30.h,
-                  ),
-                  AppText(
-                    'Recommendations For Diet',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  SizedBox(
-                    height: 230,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemCount: 5,
-                      itemBuilder: (context, index) {
-                        return Row(
-                          children: [
-                            IntrinsicHeight(
-                              child: Container(
-                                width: 200.w,
-                                decoration: BoxDecoration(
-                                  color: Color(0xff243e3b),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      height: 20.h,
-                                    ),
-                                    Image.asset(
-                                      "assets/dieta.png",
-                                      scale: 4,
-                                    ),
-                                    SizedBox(
-                                      height: 15.h,
-                                    ),
-                                    AppText(
-                                      'Honey Pancake',
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xffE9E3E4),
-                                    ),
-                                    SizedBox(
-                                      height: 5.h,
-                                    ),
-                                    AppText(
-                                      'Easy | 30mins | 180kCal',
-                                      fontSize: 10.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      height: 15.h,
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    MealDetails()));
-                                      },
-                                      child: Container(
-                                        width: 100.w,
-                                        decoration: BoxDecoration(
-                                          color: Color(0xff0f856f),
-                                          borderRadius: BorderRadius.circular(15),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 6.0),
-                                          child: Center(
-                                            child: AppText(
-                                              'View',
-                                              fontSize: 12.sp,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 15,)
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 15.w,
-                            ),
-                            // Container(
-                            //   height: 240.h,
-                            //   width: 200.w,
-                            //   decoration: BoxDecoration(
-                            //     color: Color(0xff412b53),
-                            //     borderRadius: BorderRadius.circular(15),
-                            //   ),
-                            //   child: Column(
-                            //     mainAxisAlignment: MainAxisAlignment.center,
-                            //     children: [
-                            //       SizedBox(
-                            //         height: 20.h,
-                            //       ),
-                            //       Image.asset(
-                            //         "assets/dieta.png",
-                            //         scale: 4,
-                            //       ),
-                            //       SizedBox(
-                            //         height: 15.h,
-                            //       ),
-                            //       AppText(
-                            //         'Honey Pancake',
-                            //         fontSize: 16.sp,
-                            //         fontWeight: FontWeight.w600,
-                            //         color: Color(0xffE9E3E4),
-                            //       ),
-                            //       SizedBox(
-                            //         height: 5.h,
-                            //       ),
-                            //       AppText(
-                            //         'Easy | 30mins | 180kCal',
-                            //         fontSize: 10.sp,
-                            //         fontWeight: FontWeight.w500,
-                            //         color: Colors.grey,
-                            //       ),
-                            //       SizedBox(
-                            //         height: 15.h,
-                            //       ),
-                            //       GestureDetector(
-                            //         onTap: () {
-                            //           Navigator.push(
-                            //               context,
-                            //               MaterialPageRoute(
-                            //                   builder: (context) =>
-                            //                       MealDetails()));
-                            //         },
-                            //         child: Container(
-                            //           height: 30.h,
-                            //           width: 100.w,
-                            //           decoration: BoxDecoration(
-                            //             color: Color(0xff0f856f),
-                            //             borderRadius: BorderRadius.circular(15),
-                            //           ),
-                            //           child: Center(
-                            //             child: AppText(
-                            //               'View',
-                            //               fontSize: 12.sp,
-                            //               fontWeight: FontWeight.w500,
-                            //               color: Colors.white,
-                            //             ),
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
-                            // SizedBox(
-                            //   width: 15.w,
-                            // ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30.h,
-                  ),
-                  AppText(
-                    'Popular',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                  ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: 2,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Row(
-                        children: [
-                          Image.asset(
-                            "assets/todays.png",
-                            scale: 3.5,
-                          ),
-                          SizedBox(
-                            width: 15.w,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                'Salmon Nigiri',
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xffE9E3E4),
-                              ),
-                              SizedBox(
-                                height: 3.h,
-                              ),
-                              AppText(
-                                'Today | 7am',
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey,
-                              ),
-                            ],
-                          ),
-                          Spacer(),
-                          Container(
-                            height: 20.h,
-                            width: 20.w,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Color(0xff93289f))),
-                            child: Image.asset(
-                              "assets/arrow.png",
-                              scale: 4.2,
-                              color: Color(0xff93289f),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
+      body: _buildWorkoutRoutinesContent(),
+    );
+  }
+  
+  Widget _buildWorkoutRoutinesContent() {
+    return SingleChildScrollView(
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20.h),
+              AppText(
+                'Choose Level',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xffE9E3E4),
               ),
-            ),
+              SizedBox(height: 15.h),
+              LevelSelector(
+                selectedLevel: selectedLevel,
+                onLevelSelected: (level) {
+                  setState(() {
+                    selectedLevel = level;
+                  });
+                },
+              ),
+              SizedBox(height: 25.h),
+              StreamBuilder<List<WorkoutModel>>(
+                stream: _firebaseService.getWorkoutsByDifficulty(selectedLevel),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error loading workouts: ${snapshot.error}',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+                  
+                  final workouts = snapshot.data ?? [];
+                  
+                  if (workouts.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 30.h),
+                        child: AppText(
+                          'No workouts found for $selectedLevel level',
+                          fontSize: 14.sp,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  return Column(
+                    children: workouts.map((workout) => 
+                      WorkoutCard(
+                        workout: workout,
+                        onTap: () => _navigateToWorkoutDetails(workout),
+                      )
+                    ).toList(),
+                  );
+                },
+              ),
+              SizedBox(height: 20.h),
+            ],
           ),
         ),
+      ),
+    );
+  }
+  
+  void _navigateToWorkoutDetails(WorkoutModel workout) {
+    Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => WorkoutDetailsScreen(workout: workout),
       ),
     );
   }

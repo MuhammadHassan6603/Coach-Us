@@ -1,4 +1,3 @@
-import 'package:didpool/profile_screen/profile.dart';
 import 'package:didpool/bottom_bar/bottom_bar.dart';
 import 'package:didpool/components/app_text.dart';
 import 'package:didpool/components/custom_button.dart';
@@ -7,7 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RegistrationSuccess extends StatelessWidget {
-  const RegistrationSuccess({super.key});
+  final String? fullname;
+  const RegistrationSuccess({super.key,required this.fullname});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class RegistrationSuccess extends StatelessWidget {
                   height: 20.h,
                 ),
                 AppText(
-                  'Welcome User',
+                  'Welcome $fullname',
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,

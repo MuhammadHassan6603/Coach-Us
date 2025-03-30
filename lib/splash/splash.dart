@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'package:didpool/components/custom_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:didpool/bottom_bar/bottom_bar.dart';
 import 'package:didpool/onboarding/onboarding1.dart';
-import 'package:didpool/onboarding/welcome2.dart';
+import 'package:didpool/register/complete_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,6 +26,29 @@ class _SplashScreenState extends State<SplashScreen> {
         _changeBackground = true;
       });
     });
+    Future.delayed(Duration(seconds: 2), () {
+      _handleNavigation();
+    });
+  }
+
+  void _handleNavigation() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Onboarding1()));
+    } else {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (userDoc.exists && userDoc['profileCompleted'] == true) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => BottomBarScreen()));
+      } else {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => CompleteProfile()));
+      }
+    }
   }
 
   @override
@@ -47,32 +72,36 @@ class _SplashScreenState extends State<SplashScreen> {
           child: SafeArea(
             child: Column(
               children: [
-                SizedBox(height: 360.h),
+                SizedBox(height: 300.h),
+                Image.asset('assets/icons/logo.png', width: 90, height: 90),
                 Center(
                   child: AnimatedDefaultTextStyle(
                     duration: Duration(seconds: 2),
                     style: GoogleFonts.poppins(
-                      color: _changeBackground ? Colors.white : Color(0xff986df1),
+                      color:
+                          _changeBackground ? Colors.white : Color(0xff986df1),
                       fontSize: 30.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     child: Text('Coach US'),
                   ),
                 ),
-                SizedBox(height: 6.h),
+                SizedBox(height: 2.h),
                 AnimatedDefaultTextStyle(
                   duration: Duration(seconds: 2),
                   style: GoogleFonts.poppins(
                     color: _changeBackground ? Colors.black87 : Colors.grey,
-                    fontSize: 15.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
                   child: Text("Everyone Can Train"),
                 ),
-                SizedBox(height: 250.h),
-                Custombutton(title: 'Get Started', ontap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Onboarding1()));
-                }),
+                SizedBox(height: 300.h),
+                // Custombutton(
+                //     title: 'Get Started',
+                //     ontap: () {
+                //       _handleNavigation();
+                //     }),
               ],
             ),
           ),
